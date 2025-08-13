@@ -1,0 +1,27 @@
+#map {
+  height: 400px;
+  width: 100%;
+}
+
+.title {
+  font-size: 24px;
+  color: black;
+}
+
+.sanas {
+  color: black;
+}
+
+.csun {
+  color: red;
+}
+.map {
+  font-weight: bold;
+  color: red;
+  text-decoration: none;
+  display: inline;
+}
+
+.quiz {
+  color: black;
+}

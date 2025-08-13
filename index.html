@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sana's CSUN Map Quiz</title>
+  <style>
+    #map {
+      height: 400px;
+      width: 100%;
+    }
+
+    .message-container {
+      position: absolute;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .message.correct {
+      background-color: green;
+    }
+
+    .message.incorrect {
+      background-color: red;
+    }
+
+    .title {
+      font-size: 24px;
+      color: black;
+    }
+
+    .sanas {
+      color: black;
+    }
+
+    .csun {
+      color: red;
+    }
+
+    .map {
+      color: red;
+    }
+
+    .quiz {
+      color: black;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+</head>
+<body>
+  <h1><span class="sanas">Sana's</span> <span class="csun">CSUN</span> <span class="map">Map</span> <span class="quiz">Quiz</span></h1>
+
+  <div id="map"></div>
+  <script>
+    let locations = [
+      { lat: 34.2391, lng: -118.5280, name: "Citrus Hall—E3" },
+      { lat: 34.2403, lng: -118.5313, name: "Bayramian Hall-C4" },
+      { lat: 34.2411, lng: -118.5289, name: "Jacaranda Hall-E5" },
+      { lat: 34.2389, lng: -118.5307, name: "Jerome Richfield-C3" },
+      { lat: 34.2400, lng: -118.5293, name: "CSUN University Library-D4" },
+    ];
+
+    let userAttempts = 0;
+    let correctAttempts = 0;
+    let map;
+
+    function initMap() {
+      const csun = { lat: 34.2427, lng: -118.5271 };
+      map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 16,
+        center: csun,
+        gestureHandling: "auto", // Enabling both panning and zooming
+      });
+
+      map.addListener("dblclick", function (event) {
+        checkUserGuess(event.latLng);
+      });
+
+      askQuestion(); // Starting the quiz by asking the first question
+    }
+
+    function askQuestion() {
+      if (userAttempts < locations.length) {
+        const location = locations[userAttempts];
+        const question = "Where is " + location.name + "?";
+        
+        // Using SweetAlert to look more professional
+        Swal.fire({
+          title: question,
+          showCancelButton: false,
+          showConfirmButton: false,
+          html: '<button id="playButton">Play</button>',
+        });
+
+        // Attaching event listener to the Play button
+        document.getElementById('playButton').addEventListener('click', function () {
+          Swal.close();
+        });
+      }
+    }
+
+    function getRandomOffset() {
+      // Generating a random offset between -0.0005 and 0.0005
+      return (Math.random() - 0.5) * 0.001;
+    }
+
+    function checkUserGuess(userLatLng) {
+      const correctLatLng = locations[userAttempts];
+      const offsetLatLng = {
+        lat: userLatLng.lat() + getRandomOffset(),
+        lng: userLatLng.lng() + getRandomOffset(),
+      };
+
+      // Checking if the distance between user's guess and correct location is within a tolerance
+      const distance = getDistance(offsetLatLng, correctLatLng);
+      const tolerance = 0.0005; // Adjust the tolerance as needed
+
+      // Drawing a circle on the map representing the user's guess
+      drawCircle(offsetLatLng, (distance < tolerance));
+
+      // Checking if the guess is correct
+      if (distance < tolerance) {
+        displayMessage("You are correct!", "correct"); // Display "You are correct!" in green for correct answer
+        correctAttempts++;
+      } else {
+        displayMessage("Sorry, wrong answer!", "incorrect"); // Display "Sorry, wrong answer!" in red for incorrect answer
+      }
+
+      // Moving on to the next question
+      userAttempts++;
+
+      if (userAttempts < locations.length) {
+        askQuestion(); // Ask the next question
+      } else {
+        // Displaying final result after all questions have been answered
+        Swal.fire({
+          title: "Game Over!",
+          text: "You got " + correctAttempts + " correct out of " + locations.length + ".",
+          icon: "info",
+        });
+      }
+    }
+
+    function drawCircle(location, isCorrect) {
+      const color = isCorrect ? 'green' : 'red';
+      new google.maps.Circle({
+        strokeColor: color,
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: color,
+        fillOpacity: 0.35,
+        map: map,
+        center: location,
+        radius: 10, // Adjusting the radius as needed
+      });
+    }
+
+    function getDistance(point1, point2) {
+      const latDiff = point1.lat - point2.lat;
+      const lngDiff = point1.lng - point2.lng;
+      return Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
+    }
+
+    function displayMessage(message, type) {
+      const messageElement = document.createElement("div");
+      messageElement.classList.add("message-container");
+      messageElement.classList.add(type === "correct" ? "correct" : "incorrect");
+      messageElement.textContent = message;
+      document.body.appendChild(messageElement);
+
+      // Removing the message after 2 seconds 
+      setTimeout(() => {
+        document.body.removeChild(messageElement);
+      }, 2000);
+    }
+  </script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAzQLP-zt-csXbZjyXR1Mf2IMcGxsEgxLA&callback=initMap"></script>
+  //Loading the Google Maps API 
+  </body>
+</html>
